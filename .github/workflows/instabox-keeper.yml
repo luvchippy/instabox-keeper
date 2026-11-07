@@ -1,0 +1,28 @@
+name: instabox-keeper
+
+on:
+  schedule:
+    # Every 10 minutes: keeps the guest busy (idle pause is 30 min) and
+    # breathes before max-run, so the punitive cooldown never fires.
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: instabox-keeper
+  cancel-in-progress: false
+
+jobs:
+  keeper:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run keeper
+        env:
+          INSTABOX_API_KEY: ${{ secrets.INSTABOX_API_KEY }}
+          INSTABOX_MACHINE: ${{ secrets.INSTABOX_MACHINE }}
+          INSTABOX_BUFFER_MINUTES: '20'
+        run: python instabox_keeper.py
